@@ -1,0 +1,85 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "devopsproject1"
+        REGISTRY = "docker.io/your-dockerhub-id"
+        KUBE_CONFIG = credentials('kubeconfig')
+    }
+
+    stages {
+
+        stage('SCM Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/masterdevopsin/DevopsProject1.git'
+            }
+        }
+
+        stage('Clean Workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+
+        stage('File System Vulnerability Scan (Trivy)') {
+            steps {
+                sh '''
+                trivy fs . > fs-report.txt
+                '''
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh """
+                docker build -t $REGISTRY/$IMAGE_NAME:latest .
+                """
+            }
+        }
+
+        stage('Docker Image Scan (Trivy)') {
+            steps {
+                sh """
+                trivy image $REGISTRY/$IMAGE_NAME:latest > image-report.txt
+                """
+            }
+        }
+
+        stage('Docker Push') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                    sh """
+                    echo $PASS | docker login -u $USER --password-stdin
+                    docker push $REGISTRY/$IMAGE_NAME:latest
+                    """
+                }
+            }
+        }
+
+        stage('Deploy to GKE') {
+            steps {
+                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+                    sh """
+                    export KUBECONFIG=$KUBECONFIG
+                    kubectl apply -f k8s/deployment.yaml
+                    kubectl apply -f k8s/service.yaml
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            mail to: 'team@example.com',
+            subject: "SUCCESS: Pipeline Passed",
+            body: "Build successful and deployed to GKE"
+        }
+
+        failure {
+            mail to: 'team@example.com',
+            subject: "FAILED: Pipeline Broken",
+            body: "Check Jenkins logs"
+        }
+    }
+}
