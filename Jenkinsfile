@@ -20,8 +20,12 @@ pipeline{
                 stage('4. File System Scan'){
                         steps {
                           sh '''
-				echo "Running Trivy filesystem scan..."
-				trivy fs .
+				 echo "Checking workspace..."
+			         ls -la
+
+				 echo "Running Trivy filesystem scan..."
+			         trivy fs . --severity HIGH,CRITICAL
+
 			  '''
                        }
                 }
