@@ -27,7 +27,10 @@ pipeline{
                 stage('5. Build Docker Image'){
                         steps {
                           sh '''
+						  	  echo "Checking Docker..."
                               docker version
+
+							  echo "Building image..."
 							  docker build -t demoNginx:v1 .
 							  
                                 
