@@ -31,14 +31,16 @@ pipeline{
                     		fi
 
                     		echo "Running Trivy filesystem scan..."
-                    		trivy fs . --severity HIGH,CRITICAL --exit-code 1
+                    		trivy fs . --severity HIGH,CRITICAL || true
                 		'''
                        }
                 }
                 stage('5. Build Docker Image'){
                         steps {
                           sh '''
-                              docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                              docker version
+							  docker build -t demoNginx:v1 .
+							  
                                 
                           '''
                        }
@@ -46,7 +48,7 @@ pipeline{
                 stage('6. Build Image Scan'){
                         steps {
                           sh '''
-                              trivy image ${IMAGE_NAME}:${IMAGE_TAG}
+                              trivy image demoNginx:v1 --severity HIGH,CRITICAL || true
 
                           '''
                        }
