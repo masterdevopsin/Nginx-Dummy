@@ -1,7 +1,7 @@
 pipeline{
 	agent any
 	environment{
-		IMAGE_NAME = "demoNginx"
+		IMAGE_NAME = "demonginx"
 		IMAGE_TAG = "v1"
 	}
 
@@ -31,7 +31,7 @@ pipeline{
                               docker --version
 
 							  echo "Building image..."
-							  docker build -t demoNginx:v1 .
+							  docker build -t demonginx:v1 .
 							  
                                 
                           '''
