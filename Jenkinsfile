@@ -20,17 +20,6 @@ pipeline{
                 stage('4. File System Scan'){
                         steps {
                           sh '''
-                    		echo "Checking workspace..."
-                    		ls -la
-
-                    		echo "Installing Trivy if not present..."
-                    		if ! command -v trivy &> /dev/null
-                   			 then
-                        		wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.50.0_Linux-64bit.deb
-                        		sudo dpkg -i trivy_0.50.0_Linux-64bit.deb
-                    		fi
-
-                    		echo "Running Trivy filesystem scan..."
                     		trivy fs . --severity HIGH,CRITICAL || true
                 		'''
                        }
